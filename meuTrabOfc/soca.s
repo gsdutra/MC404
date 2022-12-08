@@ -19,40 +19,98 @@ Syscall_set_motor:
 
 	#fim das verific
 
-	sw a0, 0x21(s6)
-	sw a1, 0x20(s6)
+	sb a0, 0x21(s6)
+	sb a1, 0x20(s6)
 	li a0, 0
+	j end
 
 	bad_arguments:
 		li a0, -1
-	
-	j end
+		j end
 
 Syscall_set_handbreak:
 	li s6, CAR_ADRESS
 	
 	beq a0, zero, end
-	sw a0, 0x22(s6)
-
+	sb a0, 0x22(s6)
+	
 	j end
 	
 Syscall_read_sensors:
 	li s6, CAR_ADRESS
 	li s0, 1
-	sb, s0, 0x01(s6)
+	sb s0, 0x01(s6)
 	
+	loop_waiting_sen:
+		lb s1, 0x01(s6)
+		bne s1, zero, loop_waiting_sen
+
+	addi s2, s6, 0x24
+	li s3, 0
+	li s4, 256
+	mv a4, a0
+
+	loop_image:
+		lb s5, (s2)
+		sb s5, (a4)
+
+		addi a4, a4, 1
+		addi s2, s2, 1
+		addi s3, s3, 1
+
+		bne s3, s4, loop_image
+
 	j end
 
 Syscall_read_sensor_distance:
+	li s6, CAR_ADRESS
+	li s0, 1
+	sb s0, 0x02(s6)
 	
+	loop_waiting_dis:
+		lb s1, 0x02(s6)
+		bne s1, zero, loop_waiting_dis
+
+	lw a0, 0x1c(s6)
+
 	j end
 	
 Syscall_get_position:
-	
+	li s6, CAR_ADRESS
+	li s0, 1
+	sb s0, 0x00(s6)
+
+	loop_waiting_pos:
+		lb s1, 0x00(s6)
+		bne s1, zero, loop_waiting_pos
+
+	lw s2, 0x10(s6)
+	lw s3, 0x14(s6)
+	lw s4, 0x18(s6)
+
+	sw s2, (a0)
+	sw s3, (a1)
+	sw s4, (a2)
+
 	j end
 	
 Syscall_get_rotation:
-	
+	li s6, CAR_ADRESS
+	li s0, 1
+	sb s0, 0x00(s6)
+
+	loop_waiting_rot:
+		lb s1, 0x00(s6)
+		bne s1, zero, loop_waiting_rot
+
+	lw s2, 0x04(s6)
+	lw s3, 0x08(s6)
+	lw s4, 0x0c(s6)
+
+	sw s2, (a0)
+	sw s3, (a1)
+	sw s4, (a2)
+
 	j end
 	
 Syscall_read:
