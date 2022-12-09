@@ -114,19 +114,87 @@ Syscall_get_rotation:
 	j end
 	
 Syscall_read:
-	
+	li s0, 0
+	li s1, 0
+	loop_read:
+		li s6, SERIAL_ADRESS
+		
+		li s2, 1
+		sb s2, 0x2(s6)
+
+		loop_read_operation:
+			lb s2, 0x2(s6)
+			bne s2, zero, loop_read_operation
+
+		lb s2, 0x3(s6)
+		sb s2, 0(a1) 
+
+		addi a1, a1, 1
+		addi s1, s1, 1
+		
+		beq s1, a2, end_readlp
+		j loop_read
+
+	end_readlp:
+		mv a0, s1
 	j end
 	
 Syscall_write:
+
+	li s6, SERIAL_ADRESS
+	li s0, 1
+
+	write_loop:
+		lb s1, 0x00(a1)
+		sb s0, 0x00(s6)
+		sb s1, 0x01(s6)
+
+		writing:
+			lb s2, (s6)
+			bne s2, zero, writing
+
+		addi a1, a1, 1
+		sub a2, a2, s0
+		bne a2, zero, write_loop
 	
 	j end
 	
 Syscall_draw_line:
-	
+	li s6, CANVAS_ADRESS
+
+	li s0, 256
+	sb s0, 0x02(s6)
+
+	addi s2, s6, 0x08
+	li s3, 0
+	li s4, 256
+	mv a4, a0
+
+	#salvando o array na memoria do canvas
+	loop_canvas:
+		lb s5, (s2)
+		sb s5, (a4)
+
+		addi a4, a4, 1
+		addi s2, s2, 1
+		addi s3, s3, 1
+
+		bne s3, s4, loop_canvas
+
 	j end
 	
 Syscall_get_systime:
-	
+	li s6, GPT_ADRESS
+
+	li s0, 1
+	sb s0, (s6)
+
+	loop_waiting_gpt:
+		lb s1, (s6)
+		bne s1, zero, loop_waiting_gpt
+
+	lw a0, 0x08(s6)
+
 	j end
 	
 ###############################################################
