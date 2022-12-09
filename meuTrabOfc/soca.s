@@ -140,8 +140,7 @@ Syscall_read:
 	j end
 	
 Syscall_write:
-
-	li s6, SERIAL_ADRESS
+	/*li s6, SERIAL_ADRESS
 	li s0, 1
 
 	write_loop:
@@ -156,9 +155,31 @@ Syscall_write:
 		addi a1, a1, 1
 		sub a2, a2, s0
 		bne a2, zero, write_loop
-	
+
 	j end
-	
+	*/
+	li t1, SERIAL_ADRESS
+
+    li t2, 1
+    mv t3, a2 # iterador
+    mv t4, a1 # move pelo buffer
+
+    loop_fora_write:
+ 
+        lb t5, 0(t4)
+        sb t5, 1(t1)
+        sb t2, 0(t1)
+    
+            loop_dentro_write:
+                lb t6, 0(t1)
+                bne t6, zero, loop_dentro_write
+
+
+        addi t4, t4, 1
+        addi t3, t3, -1
+        bne t3, zero, loop_fora_write
+
+    j end
 Syscall_draw_line:
 	li s6, CANVAS_ADRESS
 
