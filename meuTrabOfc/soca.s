@@ -114,72 +114,62 @@ Syscall_get_rotation:
 	j end
 	
 Syscall_read:
+	li s6, SERIAL_ADRESS
+	#a1 = buffer
+	#a2 = size
 	li s0, 0
-	li s1, 0
-	loop_read:
-		li s6, SERIAL_ADRESS
+	mv s5, a1
+	li a5, 10
+
+	reading:
+
+		li s1, 1
+		sb s1, 0x02(s6)
+
+		read_inner:
+			lb s2, 0x02(s6)
+			bne s2, zero, read_inner
+
+		lb s4, 0x03(s6)
+		beq s4, zero, endrd
+		beq s4, a5, endrd
+		sb s4, (s5)
+
+		addi s5, s5, 1
+		addi s0, s0, 1
 		
-		li s2, 1
-		sb s2, 0x2(s6)
+		beq s0, a2, endrd
 
-		loop_read_operation:
-			lb s2, 0x2(s6)
-			bne s2, zero, loop_read_operation
+		j reading
 
-		lb s2, 0x3(s6)
-		sb s2, 0(a1) 
-
-		addi a1, a1, 1
-		addi s1, s1, 1
-		
-		beq s1, a2, end_readlp
-		j loop_read
-
-	end_readlp:
-		mv a0, s1
-	j end
+	endrd:
+		sb zero, (s5)
+		j end
 	
 Syscall_write:
-	/*li s6, SERIAL_ADRESS
-	li s0, 1
+	li s6, SERIAL_ADRESS
+	#a1 = buffer
+	#a2 = size
+	li s0, 0
+	mv s5, a1
 
-	write_loop:
-		lb s1, 0x00(a1)
-		sb s0, 0x00(s6)
-		sb s1, 0x01(s6)
+	writing:
+		lb s4, (s5)	#salva o byte do buffer
+		sb s4, 0x01(s6) #no 0x01 da serial port
 
-		writing:
-			lb s2, (s6)
-			bne s2, zero, writing
+		li s1, 1
+		sb s1, 0x00(s6)
 
-		addi a1, a1, 1
-		sub a2, a2, s0
-		bne a2, zero, write_loop
+		write_inner:
+			lb s2, 0x00(s6)
+			bne s2, zero, write_inner
 
-	j end
-	*/
-	li t1, SERIAL_ADRESS
+		addi s5, s5, 1
+		addi s0, s0, 1
+		
+		beq s0, a2, end
+		j writing
 
-    li t2, 1
-    mv t3, a2 # iterador
-    mv t4, a1 # move pelo buffer
-
-    loop_fora_write:
- 
-        lb t5, 0(t4)
-        sb t5, 1(t1)
-        sb t2, 0(t1)
-    
-            loop_dentro_write:
-                lb t6, 0(t1)
-                bne t6, zero, loop_dentro_write
-
-
-        addi t4, t4, 1
-        addi t3, t3, -1
-        bne t3, zero, loop_fora_write
-
-    j end
 Syscall_draw_line:
 	li s6, CANVAS_ADRESS
 

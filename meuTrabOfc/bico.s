@@ -218,38 +218,33 @@ display_image:#//
     ret
 
 puts:
-    mv t1, a0 # move pelo buffer
-	li t2, 0 # condicao de parada
-
-	loop_puts:
-		lbu t3, 0(t1)
-		beq t3, t2, fim_loop_puts
-
-		mv a1, t1
-		li a2, 1
-		li a7, 18
-		ecall
-		
-		addi t1, t1, 1
-		j loop_puts
-
-	fim_loop_puts:
-
-	addi sp, sp, -16
-
-	li t3, '\n'
-	sb t3, 12(sp)
-
-	addi a1, sp, 12
-	li a2, 1
-	li a7, 18
-	ecall
-
-	addi sp, sp, 16
-
-	li a0, 1
-
-	ret
+    li t1, 0
+    add a5, a0, zero
+    lb t0, 0(a5)
+    beq t0, zero, fim_puts
+    teste2:
+    addi a5, a5, 1
+    lb t0, 0(a5)
+    bne t0, zero, teste2
+    li t0, 10
+    sb t0, 0(a5)
+    sub t0, a5, a0
+    add a2, t0, zero
+    addi a2, a2, 1
+    add a1, a0, zero
+    li a7, 18
+    ecall
+    sb zero, 0(a5);
+    ret
+    fim_puts:
+    li t0, 10
+    sb t0, 0(a5)
+    mv a1, a5
+    li a2, 1
+    li a7, 18
+    ecall
+    sb zero, 0(a5);
+    ret
 
 gets:
     li a7, 10
